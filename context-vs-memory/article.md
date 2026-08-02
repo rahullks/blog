@@ -205,7 +205,7 @@ Several things stay unsettled. Memory retrieval's showing here rests on a perfec
 
 ## Resources
 
-Code, notebook, and full results table: [link to GitHub repo]
+Code, notebook, and full results table: https://github.com/rahullks/blog/tree/main/context-vs-memory
 
 https://arxiv.org/pdf/2510.26493 (Context Engineering 2.0)
 
