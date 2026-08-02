@@ -175,25 +175,24 @@ Memory retrieval holds perfect recall throughout with flat, bounded cost, and he
 earned: the store is ~434 tokens against a 120-token budget, so at most 12 of the 40 facts fit and
 ranking decides which. Full table and charts are in the notebook.
 
-## Two bugs that were fixed, and why they matter to anyone building the same harness
+## Two ways a harness like this stops measuring anything
 
-Both of these silently inflated results, and neither announces itself. If you build something like
-this, check for both.
+Both fail silently, producing clean and entirely plausible numbers. If you build something similar,
+check for both.
 
-**The memory store must be bigger than the token budget.** An earlier version used 10 facts
-totalling 113 tokens against a 120-token budget. The whole store fit, so `approach_memory_retrieval`
-packed all of it every time and the ranking step never decided anything. Its perfect recall was a
-property of the budget, not the retrieval; a deliberately nonsensical query still scored 10/10.
-Now there are 40 facts (~434 tokens), at most 12 fit, and a nonsense query returns a partial,
-arbitrary slice. Check your store's token count against your budget before believing any retrieval
-number.
+**The memory store has to be bigger than the token budget.** Here it comes to ~434 tokens against a
+120-token budget, so at most 12 of the 40 facts fit and ranking decides which. Ten facts would come
+to 113 tokens: the whole store would fit every time, `approach_memory_retrieval` would pack all of
+it, and the ranking step would never decide anything. Perfect recall would then be a property of
+the budget rather than the retrieval, and a deliberately nonsensical query would still score 10/10.
+Check your store's token count against your budget before believing any retrieval number.
 
-**Hit detection must match the retrieved unit, not a substring.** An earlier version scored a hit
-as `expected_snippet in assembled_text`. But `"IST"` is a substring of `"list"`, and both `"list"`
-and `"Python"` appear in the filler pool, so two of the facts could register a hit off a filler
-turn with nothing retrieved at all. That inflated recency truncation (a reported 0.20 where the
-true value was 0.00) and context packing's tail (0.70/0.40 where the truth was 0.60/0.30). Hits
-now require the fact-bearing turn itself.
+**Hit detection has to match the retrieved unit, not a substring.** Scoring a hit as
+`expected_snippet in assembled_text` invents hits: `"IST"` is a substring of `"list"`, and both
+`"list"` and `"Python"` appear in the filler pool, so two facts can register a hit off a filler turn
+with nothing retrieved at all. That inflates recency truncation (0.20 against a true 0.00) and
+context packing's tail (0.70 and 0.40 against a true 0.625 and 0.375). A hit here requires the
+fact-bearing turn itself to be present.
 
 ## Known simplifications (read before citing the numbers)
 

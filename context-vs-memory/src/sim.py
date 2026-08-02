@@ -11,11 +11,12 @@ from dataclasses import dataclass, field
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 
-# 40 facts, deliberately more than the token budget can hold. With 10 facts the
-# whole extracted store fit inside a 120-token budget, which meant
-# approach_memory_retrieval packed all of it every time and its ranking step
-# never decided anything: its perfect recall was a fact about the budget, not
-# about retrieval. At 40 facts only a fraction fits, so retrieval has to work.
+# 40 facts, deliberately more than the token budget can hold. The extracted
+# store comes to ~434 tokens against a 120-token budget, so only a fraction fits
+# and ranking has to choose. If the whole store fit, approach_memory_retrieval
+# would pack all of it every time and its ranking step would never decide
+# anything, making perfect recall a property of the budget rather than of
+# retrieval.
 FACTS = [
     ("user_id", "my user ID is U-48213"),
     ("favorite_color", "my favorite color is teal"),
@@ -308,11 +309,12 @@ def run_eval(conversation_lengths, token_budget=120, seed=7, max_scorable_histor
     """Measure recall and scoring cost for each approach across conversation lengths.
 
     A hit requires the *fact-bearing turn itself* to be present in the assembled
-    context. An earlier version tested `expected_snippet in text`, which was
-    wrong: "IST" is a substring of "list", and both "list" and "Python" appear
-    in the filler pool, so two of the facts could register a hit off a filler
-    turn with nothing actually retrieved. That inflated recency truncation
-    (0.20 vs. a true 0.00 at 240 and 480 turns) and context packing's tail.
+    context, rather than an expected substring appearing somewhere in it.
+    Substring matching invents hits: "IST" is a substring of "list", and both
+    "list" and "Python" appear in the filler pool, so two of the facts could
+    register a hit off a filler turn with nothing actually retrieved. That
+    inflates recency truncation (0.20 against a true 0.00 at 240 and 480 turns)
+    and context packing's tail.
     """
     query_set = query_set or QUERIES
     rows = []
