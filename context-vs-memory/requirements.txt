@@ -1,0 +1,10 @@
+numpy
+pandas
+scikit-learn
+matplotlib
+jupyter
+nbconvert
+
+# local embeddings for src/local_backend.py. Runs ONNX on CPU; the default
+# model (BAAI/bge-small-en-v1.5) downloads ~130MB on first use, then caches.
+fastembed
